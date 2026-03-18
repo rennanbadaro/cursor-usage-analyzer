@@ -1,0 +1,42 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env files
+.env
+.env.*
+
+# TypeScript / Node
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Nested TypeScript project
+cursor-usage-ts/node_modules/
+cursor-usage-ts/dist/
+cursor-usage-ts/build/
+cursor-usage-ts/coverage/
+cursor-usage-ts/.vite/
+cursor-usage-ts/.env
+cursor-usage-ts/.env.*
+cursor-usage-ts/*.tsbuildinfo
+
+# Go
+*.test
+*.out
+coverage.out
+
+# Usage data CSVs (only track the example)
+*.csv
+!usage.example.csv
