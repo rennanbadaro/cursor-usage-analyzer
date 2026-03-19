@@ -44,6 +44,12 @@ Install globally:
 go install github.com/rennanbadaro/cursor-usage-analyzer/cmd/cursor-usage-analyzer@latest
 ```
 
+> **Note:** Make sure `$GOPATH/bin` (or `$HOME/go/bin` by default) is in your `PATH`. Add the following to your shell rc file (`.zshrc`, `.bashrc`, etc.):
+>
+> ```bash
+> export PATH="$PATH:$(go env GOPATH)/bin"
+> ```
+
 Show help:
 
 ```bash
