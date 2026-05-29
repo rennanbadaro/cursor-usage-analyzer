@@ -80,17 +80,6 @@ func ReadCSV(r io.Reader) ([]Record, error) {
 			return nil, fmt.Errorf("row %d: model is empty", rowNumber)
 		}
 
-		totalTokensValue, err := rowValue(row, indices[columnTotalTokens], columnTotalTokens)
-		if err != nil {
-			return nil, fmt.Errorf("row %d: %w", rowNumber, err)
-		}
-
-		totalTokensRaw := strings.TrimSpace(totalTokensValue)
-		totalTokens, err := strconv.ParseInt(totalTokensRaw, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("row %d: invalid total tokens %q: %w", rowNumber, totalTokensRaw, err)
-		}
-
 		costValue, err := rowValue(row, indices[columnCost], columnCost)
 		if err != nil {
 			return nil, fmt.Errorf("row %d: %w", rowNumber, err)
@@ -100,6 +89,16 @@ func ReadCSV(r io.Reader) ([]Record, error) {
 		cost, err := parseCost(costRaw)
 		if err != nil {
 			return nil, fmt.Errorf("row %d: invalid cost %q: %w", rowNumber, costRaw, err)
+		}
+
+		totalTokensValue, err := rowValue(row, indices[columnTotalTokens], columnTotalTokens)
+		if err != nil {
+			return nil, fmt.Errorf("row %d: %w", rowNumber, err)
+		}
+
+		totalTokens, err := parseTotalTokens(strings.TrimSpace(totalTokensValue), cost)
+		if err != nil {
+			return nil, fmt.Errorf("row %d: %w", rowNumber, err)
 		}
 
 		records = append(records, Record{
@@ -164,4 +163,19 @@ func parseCost(raw string) (float64, error) {
 	}
 	raw = strings.TrimPrefix(raw, "$")
 	return strconv.ParseFloat(raw, 64)
+}
+
+func parseTotalTokens(raw string, cost float64) (int64, error) {
+	if raw == "" {
+		if cost != 0 {
+			return 0, fmt.Errorf("total tokens missing but cost is non-zero")
+		}
+		return 0, nil
+	}
+
+	totalTokens, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid total tokens %q: %w", raw, err)
+	}
+	return totalTokens, nil
 }

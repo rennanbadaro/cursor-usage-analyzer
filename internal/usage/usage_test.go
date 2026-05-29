@@ -75,6 +75,54 @@ func TestReadCSVInvalidTotalTokens(t *testing.T) {
 	}
 }
 
+func TestReadCSVEmptyTotalTokensWithZeroCost(t *testing.T) {
+	const header = "Date,User,Kind,Model,Total Tokens,Cost"
+	rows := []struct {
+		name string
+		row  string
+	}{
+		{
+			name: "aborted not charged",
+			row:  `2026-05-14T21:47:30.360Z,user@example.com,"Aborted, Not Charged",claude-opus-4-7-thinking-high,,Free`,
+		},
+		{
+			name: "errored no charge",
+			row:  `2026-05-13T21:01:39.686Z,user@example.com,"Errored, No Charge",gpt-5.5-high,,Free`,
+		},
+	}
+
+	for _, tc := range rows {
+		t.Run(tc.name, func(t *testing.T) {
+			input := header + "\n" + tc.row + "\n"
+			records, err := ReadCSV(strings.NewReader(input))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(records) != 1 {
+				t.Fatalf("expected 1 record, got %d", len(records))
+			}
+			if records[0].TotalTokens != 0 {
+				t.Fatalf("expected 0 tokens, got %d", records[0].TotalTokens)
+			}
+			if records[0].Cost != 0 {
+				t.Fatalf("expected 0 cost, got %f", records[0].Cost)
+			}
+		})
+	}
+}
+
+func TestReadCSVEmptyTotalTokensWithNonZeroCost(t *testing.T) {
+	input := "Date,Model,Total Tokens,Cost\n2026-02-19T19:35:35.883Z,gpt-5.3-codex,,1.00\n"
+
+	_, err := ReadCSV(strings.NewReader(input))
+	if err == nil {
+		t.Fatalf("expected error for empty total tokens with non-zero cost")
+	}
+	if !strings.Contains(err.Error(), "total tokens missing but cost is non-zero") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestReadCSVInvalidCost(t *testing.T) {
 	input := "Date,Model,Total Tokens,Cost\n2026-02-19T19:35:35.883Z,gpt-5.3-codex,12345,not-a-number\n"
 
